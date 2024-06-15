@@ -1,0 +1,139 @@
+apply plugin: 'org.jreleaser'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+tasks.register('sourceJar', Jar) {
+    from android.sourceSets.main.java.srcDirs
+    archiveClassifier = 'sources'
+}
+tasks.register('javadocJar', Jar) {
+    from android.sourceSets.main.java.srcDirs
+    archiveClassifier = 'javadoc'
+}
+jreleaser {
+    signing {
+        active = 'ALWAYS'
+        armored = true
+    }
+    deploy {
+        maven {
+            nexus2 {
+                'maven-central' {
+                    active = 'ALWAYS'
+                    url = 'https://s01.oss.sonatype.org/service/local'
+                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+                    closeRepository = true
+                    releaseRepository = false
+                    stagingRepository('target/staging-deploy')
+                }
+            }
+        }
+    }
+}
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'io.github.jeadyx'
+            artifactId project.name
+            version 'v3.0'
+            artifact sourceJar
+            artifact javadocJar
+            artifact 'build/outputs/aar/serialport-release.aar'
+            pom {
+                name='AndroidSerialPortApi'
+                packaging='aar'
+                description='serial port api for android'
+                url='https://github/svn/AndroidSerialportApi/'
+
+                scm {
+                    connection='scm:git:https://github/svn/AndroidSerialportApi/'
+                    developerConnection='scm:git:https://github.com/jeadyx/AndroidSerialportApi/'
+                    url='https://github.com/jeadyx/AndroidSerialportApi/'
+                }
+
+                licenses {
+                    license {
+                        name='The Apache License, Version 2.0'
+                        url='http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id='jlibrary'
+                        name='Jeady'
+                        email='jeadyx@outlook.com'
+                    }
+                }
+            }
+        }
+    }
+//    repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//        authentication(userName: ossrhUsername, password: ossrhPassword)
+//        authentication(userName: 'dJgNYROA', password: 'rLga2zgNnLAz2AeBXyA0aU16hy5/9DFrGM0Ie1v/0GOr')
+//    }
+//    uploadArchives {
+//        repositories {
+//            mavenDeployer {
+//                // 配置发布到Maven仓库的相关信息
+//                repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//                    authentication(userName: ossrhUsername, password: ossrhPassword)
+//                }
+//            }
+//        }
+//    }
+    repositories {
+        maven {
+            name = 'projectRepo'
+            url = layout.buildDirectory.dir("repo")
+        }
+//        maven {
+//            name "mavenCentral1"
+//            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+//            authentication(userName: 'dJgNYROA', password: 'rLga2zgNnLAz2AeBXyA0aU16hy5/9DFrGM0Ie1v/0GOr')
+//            credentials(HttpHeaderCredentials)
+//            authentication {
+//                header(HttpHeaderAuthentication)
+//            }
+//            url = "https://central.sonatype.com/api/v1/publisher/upload"
+//            authentication {
+//                basic(BasicAuthentication)
+//                HttpHeaderAuthentication
+//            }
+//            credentials(HttpHeaderCredentials)
+//            credentials {
+//                username ossrhUsername
+//                password ossrhPassword
+//            }
+//            credentials {
+//                username SONATYPE_NEXUS_USERNAME
+//                password SONATYPE_NEXUS_PASSWORD
+//            }
+//        mavenDeployer {
+//            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+//                authentication(userName: ossrhUsername, password: ossrhPassword)
+//            }
+//        }
+//        }
+        maven {
+            name 'mavenCentral'
+            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username 'jeadyx@outlook.com'
+                password 'Aa..223366'
+            }
+        }
+
+        maven {
+            name 'mavenCentralSnapshots'
+            url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            credentials {
+                username 'jeadyx@outlook.com'
+                password 'Aa..223366'
+            }
+        }
+    }
+}
+signing {
+    sign publishing.publications.maven
+}
