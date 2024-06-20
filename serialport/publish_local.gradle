@@ -1,6 +1,6 @@
-apply plugin: 'org.jreleaser'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
+apply plugin: 'io.github.jeadyx.sonatype-uploader'
 
 tasks.register('sourceJar', Jar) {
     from android.sourceSets.main.java.srcDirs
@@ -9,26 +9,6 @@ tasks.register('sourceJar', Jar) {
 tasks.register('javadocJar', Jar) {
     from android.sourceSets.main.java.srcDirs
     archiveClassifier = 'javadoc'
-}
-jreleaser {
-    signing {
-        active = 'ALWAYS'
-        armored = true
-    }
-    deploy {
-        maven {
-            nexus2 {
-                'maven-central' {
-                    active = 'ALWAYS'
-                    url = 'https://s01.oss.sonatype.org/service/local'
-                    snapshotUrl = 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
-                    closeRepository = true
-                    releaseRepository = false
-                    stagingRepository('target/staging-deploy')
-                }
-            }
-        }
-    }
 }
 publishing {
     publications {
@@ -68,71 +48,17 @@ publishing {
             }
         }
     }
-//    repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-//        authentication(userName: ossrhUsername, password: ossrhPassword)
-//        authentication(userName: 'dJgNYROA', password: 'rLga2zgNnLAz2AeBXyA0aU16hy5/9DFrGM0Ie1v/0GOr')
-//    }
-//    uploadArchives {
-//        repositories {
-//            mavenDeployer {
-//                // 配置发布到Maven仓库的相关信息
-//                repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-//                    authentication(userName: ossrhUsername, password: ossrhPassword)
-//                }
-//            }
-//        }
-//    }
     repositories {
         maven {
             name = 'projectRepo'
             url = layout.buildDirectory.dir("repo")
         }
-//        maven {
-//            name "mavenCentral1"
-//            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-//            authentication(userName: 'dJgNYROA', password: 'rLga2zgNnLAz2AeBXyA0aU16hy5/9DFrGM0Ie1v/0GOr')
-//            credentials(HttpHeaderCredentials)
-//            authentication {
-//                header(HttpHeaderAuthentication)
-//            }
-//            url = "https://central.sonatype.com/api/v1/publisher/upload"
-//            authentication {
-//                basic(BasicAuthentication)
-//                HttpHeaderAuthentication
-//            }
-//            credentials(HttpHeaderCredentials)
-//            credentials {
-//                username ossrhUsername
-//                password ossrhPassword
-//            }
-//            credentials {
-//                username SONATYPE_NEXUS_USERNAME
-//                password SONATYPE_NEXUS_PASSWORD
-//            }
-//        mavenDeployer {
-//            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-//                authentication(userName: ossrhUsername, password: ossrhPassword)
-//            }
-//        }
-//        }
-        maven {
-            name 'mavenCentral'
-            url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username 'jeadyx@outlook.com'
-                password 'Aa..223366'
-            }
-        }
-
-        maven {
-            name 'mavenCentralSnapshots'
-            url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            credentials {
-                username 'jeadyx@outlook.com'
-                password 'Aa..223366'
-            }
-        }
     }
+}
+sonatypeUploader {
+    dir = layout.buildDirectory.dir("repo/io").get().asFile.path
+    tokenName = tokenUsername
+    tokenPasswd = tokenPassword
 }
 signing {
     sign publishing.publications.maven
